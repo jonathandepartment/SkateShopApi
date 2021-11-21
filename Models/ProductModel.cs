@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static SkateShopApi.Models.Enum;
+﻿using static SkateShopApi.Models.Enum;
 
 namespace SkateShopApi.Models
 {

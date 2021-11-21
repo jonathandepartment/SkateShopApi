@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using SkateShopApi.Models;
 using SkateShopApi.Services;
+using System;
 
 namespace SkateShopApi.Controllers
 {
@@ -18,10 +17,13 @@ namespace SkateShopApi.Controllers
         }
         // Get All
         [HttpGet]
-        public ActionResult<List<ProductModel>> GetAll()
+        public ActionResult GetAll()
         {
-            return ProductService.GetAll();
+            if (ProductService.GetAll().Count == 0   || ProductService.GetAll() == null ) return NotFound();
+
+            return Ok(ProductService.GetAll());
         }
+
         // Get by Id
         [HttpGet("{id}")]
         public ActionResult<ProductModel> Get(int id)
@@ -35,16 +37,21 @@ namespace SkateShopApi.Controllers
         }
         // Post
         [HttpPost]
-        public ActionResult Create(ProductModel product)
+        public ActionResult Create(Object product)
         {
-            ProductService.Add(product);
-            return CreatedAtAction(nameof(Create), new { id = product.Id }, product);
+            JObject jsonProduct = JObject.Parse(product.ToString());
+
+            ProductService.Add(jsonProduct);
+            return Ok(); 
+            // return CreatedAtAction(nameof(Create), new { id = product.Id }, product);
         }
         // Put
         [HttpPut("{id}")]
-        public ActionResult Update(int id, ProductModel product)
+        public ActionResult Update(int id, Object product)
         {
-            if (id != product.Id)
+            JObject jsonProduct = JObject.Parse(product.ToString()); 
+ 
+            if (id != (int)jsonProduct.GetValue("id"))
             {
                 return BadRequest();
             }
@@ -53,7 +60,7 @@ namespace SkateShopApi.Controllers
             {
                 return NotFound();
             }
-            ProductService.Update(product);
+            ProductService.Update(jsonProduct);
             return NoContent();
 
         }

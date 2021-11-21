@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using SkateShopApi.Models;
+using static SkateShopApi.Models.Enum;
 
 namespace SkateShopApi.Services
 {
     static class ProductService
     {
-        static List<ProductModel> Products { get; }
+        static ArrayList Products { get; } = new ArrayList();
         static int nextId = 21;
         static ProductService()
         {
-            Products = new List<ProductModel>()
+
+            List<ProductModel> AllProducts = new List<ProductModel>()
                 {
                     new Clothing
                     {
@@ -285,14 +289,111 @@ namespace SkateShopApi.Services
                         ShoeSizeEu = 42
                     },
                 };
+
+            foreach (ProductModel product in AllProducts)
+                Products.Add(product) ; 
         }
 
-        public static List<ProductModel> GetAll() => Products;
-        public static ProductModel Get(int id) => Products.FirstOrDefault(product => product.Id == id);
-        public static void Add(ProductModel product)
+        public static ArrayList GetAll() => Products; 
+        
+        public static ProductModel Get(int id)
         {
-            product.Id = nextId++;
-            Products.Add(product);
+            IEnumerator enumerator = Products.GetEnumerator();
+            while (enumerator.MoveNext() )
+            {
+                ProductModel product = (ProductModel) enumerator.Current;
+                if (product.Id == id) return product; 
+            }
+            return null;
+        }
+        public static void Add(JObject jsonProduct)
+        {
+
+            int id = nextId++;
+            double price = (double)jsonProduct.GetValue("price");
+            Category category = (Category)(int)jsonProduct.GetValue("category");
+            Color color = (Color)(int)jsonProduct.GetValue("color");
+            string description = (string)jsonProduct.GetValue("description");
+            string name = (string)jsonProduct.GetValue("name");
+            int unitsInStock = (int)jsonProduct.GetValue("unitsInStock");
+            bool chosen = (bool)jsonProduct.GetValue("chosen");
+            string image = (string)jsonProduct.GetValue("image");
+            //Construct a productModel with the new values
+            if ((int)category == 0 || (int)category == 1 || (int)category == 3)
+            {
+                Size size = (Size)(int)jsonProduct.GetValue("size");
+                Products.Add(new Clothing
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    Size = size
+                });
+
+            }
+            else if ((int)category == 2)
+            {
+                double boardSize = (double)jsonProduct.GetValue("boardSize");
+                Material material = (Material)(int)jsonProduct.GetValue("material");
+
+                Products.Add(new Boards
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    BoardSize = boardSize,
+                    Material = material
+                });
+            }
+            else if ((int)category == 4)
+            {
+                int wheelSize = (int)jsonProduct.GetValue("wheelSize"); ;
+                string durometer = (string)jsonProduct.GetValue("durometer"); ;
+
+                Products.Add(new Wheels
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    WheelSize = wheelSize,
+                    Durometer = durometer
+                });
+            }
+            else if ((int)category == 5)
+            {
+                int shoeSizeEu = (int)jsonProduct.GetValue("shoeSizeEu");
+                Products.Add(new Shoes
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    ShoeSizeEu = shoeSizeEu
+                });
+            }
         }
 
         public static void Delete(int id)
@@ -305,14 +406,112 @@ namespace SkateShopApi.Services
             Products.Remove(product);
         }
 
-        public static void Update(ProductModel productToUpdate)
+        public static void Update(JObject jsonProduct)
         {
-            var index = Products.FindIndex(product => product.Id == productToUpdate.Id);
-            if (index == -1)
+
+            ProductModel editedProduct = null; 
+
+            int id = (int)jsonProduct.GetValue("id");
+            double price = (double)jsonProduct.GetValue("price");
+            Category category = (Category)(int)jsonProduct.GetValue("category");
+            Color color = (Color)(int)jsonProduct.GetValue("color");
+            string description = (string)jsonProduct.GetValue("description");
+            string name = (string)jsonProduct.GetValue("name");
+            int unitsInStock = (int)jsonProduct.GetValue("unitsInStock");
+            bool chosen = (bool)jsonProduct.GetValue("chosen");
+            string image = (string)jsonProduct.GetValue("image");
+            //Construct a productModel with the new values
+            if ((int)category == 0 || (int)category == 1 || (int)category == 3)
             {
-                return;
+                Size size = (Size)(int)jsonProduct.GetValue("size");
+                editedProduct = new Clothing
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    Size = size
+                };
+
             }
-            Products[index] = productToUpdate;
+            else if ((int)category == 2)
+            {
+                double boardSize = (double)jsonProduct.GetValue("boardSize");
+                Material material = (Material)(int)jsonProduct.GetValue("material");
+
+                editedProduct = new Boards
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    BoardSize = boardSize,
+                    Material = material
+                }; 
+            }
+            else if ((int)category == 4)
+            {
+                int wheelSize = (int)jsonProduct.GetValue("wheelSize"); ;
+                string durometer = (string)jsonProduct.GetValue("durometer"); ;
+
+                editedProduct = new Wheels
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    WheelSize = wheelSize,
+                    Durometer = durometer
+                };
+            }
+            else if ((int)category == 5)
+            {
+                int shoeSizeEu = (int)jsonProduct.GetValue("shoeSizeEu");
+                editedProduct = new Shoes
+                {
+                    Id = id,
+                    Price = price,
+                    Name = name,
+                    Category = category,
+                    Color = color,
+                    Description = description,
+                    UnitsInStock = unitsInStock,
+                    Chosen = chosen,
+                    Image = image,
+                    ShoeSizeEu = shoeSizeEu
+                };
+            }
+
+            int index= - 1; 
+            //Find the product with the same Id
+            IEnumerator enumerator = Products.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                ProductModel product = (ProductModel)enumerator.Current;
+                if (product.Id == (int)jsonProduct.GetValue("id"))
+                {
+                  index = Products.IndexOf(product); 
+                }
+            }
+            //Replace the old product with the new one
+            if(index != -1) Products[index] = editedProduct; 
+            
         }
+        
     }
 }
